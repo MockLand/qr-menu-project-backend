@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"qr-menu-project-backend/model"
 	"qr-menu-project-backend/database"
+	"strings"
 )
 
 // func GetUsers(c echo.Context) error {	
@@ -24,21 +25,20 @@ import (
 
 func CreateUser(c echo.Context) error {
 
-	var user struct {
-		ID        int    `json:"user_id" gorm:"column:user_id"`
-		Username  string `json:"username" gorm:"column:username"`
-		Email     string `json:"email" gorm:"column:email"`
-		Password  string `json:"password_hash" gorm:"column:password_hash"`
+	var user model.Users
+
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Invalid input"})
 	}
 
-	c.Bind(&user)
+	result := database.DB.Create(&user)
 
-	userData := model.Users{ID: user.ID, Username: user.Username, Email: user.Email, Password: user.Password}
-	result := database.DB.Create(&userData)
-
-	if result.Error!= nil {
-        return c.JSON(http.StatusInternalServerError, result.Error)
-    }
+	if result.Error != nil {
+		if strings.Contains(result.Error.Error(), "duplicate key value violates unique constraint") {
+			return c.JSON(http.StatusConflict, map[string]interface{}{"error": "User already exists"})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": result.Error.Error()})
+	}
 
 	return c.JSON(http.StatusOK, user)
 }
