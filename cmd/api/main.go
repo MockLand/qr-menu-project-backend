@@ -1,16 +1,26 @@
 package main
 
 import (
-	"fmt"
-	"qr-menu-project-backend/internal/server"
+	"qr-menu-project-backend/database"
+	"qr-menu-project-backend/internal/handlers"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
 
-	server := server.NewServer()
+	e:= echo.New()
 
-	err := server.ListenAndServe()
-	if err != nil {
-		panic(fmt.Sprintf("cannot start server: %s", err))
-	}
+	database.NewDB()
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+
+	// e.GET("/users", )
+	e.GET("/", handlers.HelloWorldHandler())
+	// e.GET("/users", handlers.GetUsers)
+	e.POST("/register", handlers.CreateUser)
+
+	e.Logger.Fatal(e.Start(":8080"))
 }

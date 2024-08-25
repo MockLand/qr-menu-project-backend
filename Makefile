@@ -1,6 +1,22 @@
 # Simple Makefile for a Go project
 
 # Build the application
+
+postgres:
+	docker run --name postgres_db -p 5432:5432 -e POSTGRES_USER=zarokewinda -e POSTGRES_PASSWORD=password -d postgres:12-alpine
+
+createdb:
+	docker exec -it postgres_db createdb --username=zarokewinda --owner=zarokewinda dashboard
+
+dropdb:
+	docker exec -it postgres_db dropdb -U zarokewinda dashboard
+
+migrateup:
+	migrate -path db/migration -database "postgresql://zarokewinda:password@localhost:5432/dashboard?sslmode=disable" -verbose up
+
+migratedown:
+	migrate -path db/migration -database "postgresql://zarokewinda:password@localhost:5432/dashboard?sslmode=disable" -verbose down
+
 all: build
 
 build:
@@ -67,4 +83,4 @@ watch:
 	    fi; \
 	fi
 
-.PHONY: all build run test clean
+.PHONY: postgres createdb dropdb all build run test clean migrateup migratedown
