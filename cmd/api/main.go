@@ -22,6 +22,7 @@ func main() {
 	// e.GET("/users", handlers.GetUsers)
 	e.POST("/register", handlers.CreateUser)
 	e.POST("/login", handlers.Login)
+	e.POST("/logout", handlers.Logout)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

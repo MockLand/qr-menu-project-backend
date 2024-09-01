@@ -84,4 +84,23 @@ func Login(c echo.Context) error {
 	})
 }
 
+func Logout (c echo.Context) error {
+	_, err := c.Cookie("session_id")
+
+    if err!= nil {
+        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request"})
+    }
+
+    cookie := &http.Cookie{
+        Name:     "session_id",
+        Value:    "",
+        Expires:  time.Now().Add(-24 * time.Hour), // Change to expire 24 hours ago
+        Path:     "/",
+    }
+    c.SetCookie(cookie)
+
+    return c.JSON(http.StatusOK, map[string]interface{}{"message": "Logout successful"})
+
+}
+
 
