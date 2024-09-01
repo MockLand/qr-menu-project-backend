@@ -42,7 +42,7 @@ func Login(c echo.Context) error {
 	foundUser := model.Users{}
 	result := database.DB.Where("email = ?", loginCredentials.Email).First(&foundUser)
 	if result.Error != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Database error"})
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "No user found"})
 	}
 
 	if foundUser.Password != loginCredentials.Password {
