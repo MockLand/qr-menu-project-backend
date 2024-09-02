@@ -11,14 +11,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
-
-
+var globalUserID int
 
 type Claims struct {
 	Email string `json:"email"`
 	jwt.StandardClaims
 }
-
 
 type JWTOutput struct {
 	Token  string    `json:"token"`
@@ -26,18 +24,18 @@ type JWTOutput struct {
 }
 
 type SessionData struct {
-	Token  string    `json:"token"`
-	UserId uuid.UUID `json:"user_id"`
+	Token  string `json:"token"`
+	UserId int    `json:"user_id"`
 }
 
-
-
 func Login(c echo.Context) error {
+	c.Logger().Info("Login function started")
 	var loginCredentials model.LoginCredentials
 
 	if err := c.Bind(&loginCredentials); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Invalid input"})
 	}
+
 
 	foundUser := model.Users{}
 	result := database.DB.Where("email = ?", loginCredentials.Email).First(&foundUser)
@@ -72,35 +70,34 @@ func Login(c echo.Context) error {
 		Expires:  expirationTime,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false, 
+		Secure:   false,
 	}
 	c.SetCookie(cookie)
-
+	globalUserID = foundUser.ID
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "Login successful",
 		"token":   tokenString,
 		"user_id": foundUser.ID,
 		"expires": expirationTime,
+		
 	})
 }
 
-func Logout (c echo.Context) error {
-	_, err := c.Cookie("session_id")
 
-    if err!= nil {
-        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request"})
-    }
+func Logout(c echo.Context) error {
+	_, err := c.Cookie("session_id") // Remove sessionID variable
 
-    cookie := &http.Cookie{
-        Name:     "session_id",
-        Value:    "",
-        Expires:  time.Now().Add(-24 * time.Hour), // Change to expire 24 hours ago
-        Path:     "/",
-    }
-    c.SetCookie(cookie)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request"})
+	}
 
-    return c.JSON(http.StatusOK, map[string]interface{}{"message": "Logout successful"})
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "",
+		Expires: time.Now().Add(-24 * time.Hour), // Change to expire 24 hours ago
+		Path:    "/",
+	}
+	c.SetCookie(cookie)
 
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": "Logout successful"})
 }
-
-

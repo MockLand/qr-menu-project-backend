@@ -17,9 +17,10 @@ func main() {
 	e.Use(middleware.Recover())
 
 
-	// e.GET("/users", )
 	e.GET("/", handlers.HelloWorldHandler())
-	// e.GET("/users", handlers.GetUsers)
+
+
+	e.POST("/menu", handlers.CreateMenu)
 	e.POST("/register", handlers.CreateUser)
 	e.POST("/login", handlers.Login)
 	e.POST("/logout", handlers.Logout)
