@@ -10,21 +10,18 @@ import (
 )
 
 func CreateMenu(c echo.Context) error {
-	// Check if the session cookie exists
 	_, err := c.Cookie("session_id")
 	if err != nil {
 		c.Logger().Errorf("Failed to retrieve session cookie: %v", err)
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - session_id"})
 	}
 
-	// Check if user ID is available in the context
 	userId, ok := UserID, true
 	if !ok {
 		c.Logger().Error("Failed to retrieve user_id from context")
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
 	}
 
-	// Bind the input to the menu model
 	var menu model.Menus
 	menu.User_id = userId
 	if err := c.Bind(&menu); err != nil {
@@ -32,7 +29,12 @@ func CreateMenu(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Invalid input"})
 	}
 
-	// Attempt to create the menu in the database
+	var count int64
+    database.DB.Model(&menu).Where("user_id = ? AND name = ?", userId, menu.Name).Count(&count)
+    if count > 0 {
+        return c.JSON(http.StatusConflict, map[string]interface{}{"error": "Menu with the same name already exists"})
+    }
+
 	if err := database.DB.Create(&menu).Error; err != nil {
 		c.Logger().Errorf("Failed to create menu in the database: %v", err)
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
@@ -41,7 +43,6 @@ func CreateMenu(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Failed to create menu"})
 	}
 
-	// Return the created menu
 	return c.JSON(http.StatusOK, menu)
 }
 

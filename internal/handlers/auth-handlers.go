@@ -19,16 +19,6 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-type JWTOutput struct {
-	Token  string    `json:"token"`
-	Expire time.Time `json:"expires"`
-}
-
-type SessionData struct {
-	Token  string `json:"token"`
-	UserId int    `json:"user_id"`
-}
-
 func Login(c echo.Context) error {
 	c.Logger().Info("Login function started")
 	var loginCredentials model.LoginCredentials
