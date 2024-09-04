@@ -65,4 +65,30 @@ func GetMenus(c echo.Context) error {
     return c.JSON(http.StatusOK, menus)
 }
 
+func GetMenu(c echo.Context) error {
+    _, err := c.Cookie("session_id")
+    if err!= nil {
+        c.Logger().Errorf("Failed to retrieve session cookie: %v", err)
+        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - session_id"})
+    }
 
+    userId, ok := UserID, true
+    if!ok {
+        c.Logger().Error("Failed to retrieve user_id from context")
+        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
+    }
+
+
+	menuId := c.Param("id")
+
+    var menu model.Menus
+
+    result := database.DB.Where("user_id = ? AND menu_id = ?", userId, menuId).First(&menu)
+
+    if result.Error != nil {
+        c.Logger().Errorf("Failed to retrieve menu: %v", result.Error)
+        return c.JSON(http.StatusNotFound, map[string]interface{}{"error": "Menu not found"})
+    }
+
+    return c.JSON(http.StatusOK, menu)
+}
