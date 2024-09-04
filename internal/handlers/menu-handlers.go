@@ -1,16 +1,13 @@
 package handlers
 
-
-
-
 import (
-	"github.com/labstack/echo/v4"
+	"net/http"
 	"qr-menu-project-backend/database"
 	"qr-menu-project-backend/model"
 	"strings"
-	"net/http"
-)
 
+	"github.com/labstack/echo/v4"
+)
 
 func CreateMenu(c echo.Context) error {
 	// Check if the session cookie exists
@@ -21,12 +18,11 @@ func CreateMenu(c echo.Context) error {
 	}
 
 	// Check if user ID is available in the context
-	userId, ok := globalUserID, true
+	userId, ok := UserID, true
 	if !ok {
 		c.Logger().Error("Failed to retrieve user_id from context")
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
 	}
-	
 
 	// Bind the input to the menu model
 	var menu model.Menus
@@ -49,5 +45,24 @@ func CreateMenu(c echo.Context) error {
 	return c.JSON(http.StatusOK, menu)
 }
 
+
+func GetMenus(c echo.Context) error {
+    _, err := c.Cookie("session_id")
+    if err!= nil {
+        c.Logger().Errorf("Failed to retrieve session cookie: %v", err)
+        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - session_id"})
+    }
+
+    userId, ok := UserID, true
+    if!ok {
+        c.Logger().Error("Failed to retrieve user_id from context")
+        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
+    }
+
+    var menus []model.Menus
+    database.DB.Where("user_id =?", userId).Find(&menus)
+
+    return c.JSON(http.StatusOK, menus)
+}
 
 

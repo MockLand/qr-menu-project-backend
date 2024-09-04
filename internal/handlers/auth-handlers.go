@@ -11,7 +11,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
-var globalUserID int
+
+var UserID int
 
 type Claims struct {
 	Email string `json:"email"`
@@ -36,7 +37,6 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Invalid input"})
 	}
 
-
 	foundUser := model.Users{}
 	result := database.DB.Where("email = ?", loginCredentials.Email).First(&foundUser)
 	if result.Error != nil {
@@ -47,7 +47,7 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Invalid email or password"})
 	}
 
-	expirationTime := time.Now().Add(15 * time.Minute)
+	expirationTime := time.Now().Add(15 * time.Hour)
 	claims := &Claims{
 		Email: loginCredentials.Email,
 		StandardClaims: jwt.StandardClaims{
@@ -73,19 +73,17 @@ func Login(c echo.Context) error {
 		Secure:   false,
 	}
 	c.SetCookie(cookie)
-	globalUserID = foundUser.ID
+	UserID = foundUser.ID
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "Login successful",
 		"token":   tokenString,
 		"user_id": foundUser.ID,
 		"expires": expirationTime,
-		
 	})
 }
 
-
 func Logout(c echo.Context) error {
-	_, err := c.Cookie("session_id") // Remove sessionID variable
+	_, err := c.Cookie("session_id")
 
 	if err != nil {
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request"})
@@ -94,7 +92,7 @@ func Logout(c echo.Context) error {
 	cookie := &http.Cookie{
 		Name:    "session_id",
 		Value:   "",
-		Expires: time.Now().Add(-24 * time.Hour), // Change to expire 24 hours ago
+		Expires: time.Now().Add(-24 * time.Hour), 
 		Path:    "/",
 	}
 	c.SetCookie(cookie)

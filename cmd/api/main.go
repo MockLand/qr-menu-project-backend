@@ -18,6 +18,8 @@ func main() {
 
 
 	e.GET("/", handlers.HelloWorldHandler())
+	e.GET("/menus", handlers.GetMenus)
+
 
 
 	e.POST("/menu", handlers.CreateMenu)
