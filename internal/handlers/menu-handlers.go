@@ -121,3 +121,13 @@ func DeleteMenu(c echo.Context) error {
 		"menu user id": userId,
 	})
 }
+
+
+// WHO CARES THE CLEAN CODE!?!!?!?
+
+
+
+
+
+
+// JK I'LL REFACTOR IT :)
