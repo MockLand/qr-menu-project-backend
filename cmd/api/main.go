@@ -30,5 +30,8 @@ func main() {
 
 	e.DELETE("/menu/:id", handlers.DeleteMenu)
 
+
+	e.PUT("/menu/:id", handlers.UpdateMenu)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }

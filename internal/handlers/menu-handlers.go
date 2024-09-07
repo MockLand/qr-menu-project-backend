@@ -9,6 +9,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+
+// I LITERALLY DO UNDERSTAND THIS CODE! CAN YOU EVEN IMAGINE THAT I MADE THIS CODE 
 func CreateMenu(c echo.Context) error {
 	_, err := c.Cookie("session_id")
 	if err != nil {
@@ -121,6 +123,45 @@ func DeleteMenu(c echo.Context) error {
 		"menu user id": userId,
 	})
 }
+
+func UpdateMenu(c echo.Context) error {
+
+    _, err := c.Cookie("session_id")
+    if err!= nil {
+        c.Logger().Errorf("Failed to retrieve session cookie: %v", err)
+        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - session_id"})
+    }
+    userId, ok := UserID, true
+    if!ok {
+        c.Logger().Error("Failed to retrieve user_id from context")
+        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
+    }
+
+    menuId := c.Param("id")
+
+    var menu model.Menus
+    result := database.DB.Where("user_id =? AND menu_id =?", userId, menuId).First(&menu)
+    if result.Error!= nil {
+        c.Logger().Errorf("Failed to retrieve menu: %v", result.Error)
+        return c.JSON(http.StatusNotFound, map[string]interface{}{"error": "Menu not found"})
+    }
+    if err := c.Bind(&menu); err!= nil {
+        c.Logger().Errorf("Failed to bind input to menu model: %v", err)
+        return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Invalid input"})
+    }
+    var count int64
+    database.DB.Model(&menu).Where("user_id =? AND name =?", userId, menu.Name).Count(&count)
+    if count > 0{
+        return c.JSON(http.StatusConflict, map[string]interface{}{"error": "Menu with the same name already exists"})
+    }
+    result = database.DB.Save(&menu)
+    if result.Error!= nil {
+        c.Logger().Errorf("Failed to update menu: %v", result.Error)
+        return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Failed to update menu"})
+    }
+    return c.JSON(http.StatusOK, menu)
+}
+    
 
 
 // WHO CARES THE CLEAN CODE!?!!?!?
