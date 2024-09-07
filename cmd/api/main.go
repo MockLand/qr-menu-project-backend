@@ -27,5 +27,8 @@ func main() {
 	e.POST("/login", handlers.Login)
 	e.POST("/logout", handlers.Logout)
 
+
+	e.DELETE("/menu/:id", handlers.DeleteMenu)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }

@@ -30,10 +30,10 @@ func CreateMenu(c echo.Context) error {
 	}
 
 	var count int64
-    database.DB.Model(&menu).Where("user_id = ? AND name = ?", userId, menu.Name).Count(&count)
-    if count > 0 {
-        return c.JSON(http.StatusConflict, map[string]interface{}{"error": "Menu with the same name already exists"})
-    }
+	database.DB.Model(&menu).Where("user_id = ? AND name = ?", userId, menu.Name).Count(&count)
+	if count > 0 {
+		return c.JSON(http.StatusConflict, map[string]interface{}{"error": "Menu with the same name already exists"})
+	}
 
 	if err := database.DB.Create(&menu).Error; err != nil {
 		c.Logger().Errorf("Failed to create menu in the database: %v", err)
@@ -46,50 +46,78 @@ func CreateMenu(c echo.Context) error {
 	return c.JSON(http.StatusOK, menu)
 }
 
-
 func GetMenus(c echo.Context) error {
-    _, err := c.Cookie("session_id")
-    if err!= nil {
-        c.Logger().Errorf("Failed to retrieve session cookie: %v", err)
-        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - session_id"})
-    }
+	_, err := c.Cookie("session_id")
+	if err != nil {
+		c.Logger().Errorf("Failed to retrieve session cookie: %v", err)
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - session_id"})
+	}
 
-    userId, ok := UserID, true
-    if!ok {
-        c.Logger().Error("Failed to retrieve user_id from context")
-        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
-    }
+	userId, ok := UserID, true
+	if !ok {
+		c.Logger().Error("Failed to retrieve user_id from context")
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
+	}
 
-    var menus []model.Menus
-    database.DB.Where("user_id =?", userId).Find(&menus)
+	var menus []model.Menus
+	database.DB.Where("user_id =?", userId).Find(&menus)
 
-    return c.JSON(http.StatusOK, menus)
+	return c.JSON(http.StatusOK, menus)
 }
 
 func GetMenu(c echo.Context) error {
-    _, err := c.Cookie("session_id")
-    if err!= nil {
-        c.Logger().Errorf("Failed to retrieve session cookie: %v", err)
-        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - session_id"})
-    }
+	_, err := c.Cookie("session_id")
+	if err != nil {
+		c.Logger().Errorf("Failed to retrieve session cookie: %v", err)
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - session_id"})
+	}
 
-    userId, ok := UserID, true
-    if!ok {
-        c.Logger().Error("Failed to retrieve user_id from context")
-        return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
-    }
-
+	userId, ok := UserID, true
+	if !ok {
+		c.Logger().Error("Failed to retrieve user_id from context")
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
+	}
 
 	menuId := c.Param("id")
 
-    var menu model.Menus
+	var menu model.Menus
 
-    result := database.DB.Where("user_id = ? AND menu_id = ?", userId, menuId).First(&menu)
+	result := database.DB.Where("user_id = ? AND menu_id = ?", userId, menuId).First(&menu)
 
-    if result.Error != nil {
-        c.Logger().Errorf("Failed to retrieve menu: %v", result.Error)
-        return c.JSON(http.StatusNotFound, map[string]interface{}{"error": "Menu not found"})
-    }
+	if result.Error != nil {
+		c.Logger().Errorf("Failed to retrieve menu: %v", result.Error)
+		return c.JSON(http.StatusNotFound, map[string]interface{}{"error": "Menu not found"})
+	}
 
-    return c.JSON(http.StatusOK, menu)
+	return c.JSON(http.StatusOK, menu)
+}
+
+func DeleteMenu(c echo.Context) error {
+	_, err := c.Cookie("session_id")
+	if err != nil {
+		c.Logger().Errorf("Failed to retrieve session cookie: %v", err)
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - session_id"})
+	}
+
+	userId, ok := UserID, true
+	if !ok {
+		c.Logger().Error("Failed to retrieve user_id from context")
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Unauthorized request - user_id"})
+	}
+
+	menuId := c.Param("id")
+
+	var menu model.Menus
+	result := database.DB.Where("user_id =? AND menu_id =?", userId, menuId).First(&menu).Delete(&menu)
+
+	if result.Error != nil {
+		c.Logger().Errorf("Failed to delete menu: %v", result.Error)
+		return c.JSON(http.StatusNotFound, map[string]interface{}{"error": "Menu not found"})
+	}
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message":      "Menu Deleted",
+		"menu name":    menu.Name,
+		"menu id":      menuId,
+		"menu user id": userId,
+	})
 }
