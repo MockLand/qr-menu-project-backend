@@ -4,7 +4,7 @@ services:
   psql:
     image: postgres:latest
     environment:
-      POSTGRES_DB: $postgres_db}
+      POSTGRES_DB: ${postgres_db}
       POSTGRES_USER: ${zarokewinda}
       POSTGRES_PASSWORD: ${password}
     ports:

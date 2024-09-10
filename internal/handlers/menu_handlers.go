@@ -18,7 +18,7 @@ func CreateMenu(c echo.Context) error {
 	}
 
 	var menu model.Menus
-	menu.User_id = userId
+	menu.UserId = userId
 	if err := c.Bind(&menu); err != nil {
 		c.Logger().Errorf("Failed to bind input to menu model: %v", err)
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Invalid input"})
