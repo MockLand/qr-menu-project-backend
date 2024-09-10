@@ -8,7 +8,7 @@ type Dishes struct {
 	Description string `json:"description" gorm:"column:description"`
 	Price float64 `json:"price" gorm:"column:price"`
 	CategoryId int `json:"category_id" gorm:"column:category_id"`
-	IsAvailable bool `json:"is_"`
+	IsAvailable bool `json:"is_available" gorm:"column:is_available"`
 	
 }
 
