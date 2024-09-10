@@ -4,13 +4,20 @@ import (
 	"net/http"
 	"qr-menu-project-backend/database"
 	"qr-menu-project-backend/model"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 )
 
 // I LITERALLY DO UNDERSTAND THIS CODE! CAN YOU EVEN IMAGINE THAT I MADE THIS CODE
 
+func checkExistsInDB(userId int, modelName string, data interface{}) error {
+	var count int64
+	database.DB.Model(data).Where("user_id = ? AND name = ?", userId, modelName).Count(&count)
+	if count > 0 {
+		return echo.NewHTTPError(http.StatusConflict, modelName+" already exists")
+	}
+	return nil
+}
 func CreateMenu(c echo.Context) error {
 	userId, err := getSessionAndUserID(c)
 	if err != nil {
@@ -19,25 +26,20 @@ func CreateMenu(c echo.Context) error {
 
 	var menu model.Menus
 	menu.UserId = userId
+
 	if err := c.Bind(&menu); err != nil {
 		c.Logger().Errorf("Failed to bind input to menu model: %v", err)
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Invalid input"})
 	}
 
-	var count int64
-	database.DB.Model(&menu).Where("user_id = ? AND name = ?", userId, menu.Name).Count(&count)
-	if count > 0 {
-		return c.JSON(http.StatusConflict, map[string]interface{}{"error": "Menu with the same name already exists"})
+	menuExists := checkExistsInDB(userId, menu.Name, model.Menus{})
+	if menuExists != nil {
+		return menuExists
 	}
 
 	if err := database.DB.Create(&menu).Error; err != nil {
-		c.Logger().Errorf("Failed to create menu in the database: %v", err)
-		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			return c.JSON(http.StatusConflict, map[string]interface{}{"error": "Menu already exists"})
-		}
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Failed to create menu"})
 	}
-
 	return c.JSON(http.StatusOK, menu)
 }
 
@@ -116,10 +118,9 @@ func UpdateMenu(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Invalid input"})
 	}
 
-	var count int64
-	database.DB.Model(&menu).Where("user_id =? AND name =?", userId, menu.Name).Count(&count)
-	if count > 0 {
-		return c.JSON(http.StatusConflict, map[string]interface{}{"error": "Menu with the same name already exists"})
+	menuExists := checkExistsInDB(userId, menu.Name, model.Menus{})
+	if menuExists != nil {
+		return menuExists
 	}
 
 	result = database.DB.Save(&menu)
