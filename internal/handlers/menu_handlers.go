@@ -52,6 +52,10 @@ func GetMenus(c echo.Context) error {
 	var menus []model.Menus
 	database.DB.Where("user_id =?", userId).Find(&menus)
 
+	if len(menus) == 0 {
+        return c.JSON(http.StatusNotFound, map[string]interface{}{"error": "Menus not found"})
+    }
+
 	return c.JSON(http.StatusOK, menus)
 }
 

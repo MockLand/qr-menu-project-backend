@@ -53,11 +53,11 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "Invalid email or password"})
 	}
 
-	expirationTime := time.Now().Add(15 * time.Hour)
+	expirationTime := time.Now().Add(10 * time.Hour)
 	claims := &Claims{
-		Email: loginCredentials.Email,
+		Email: 			loginCredentials.Email,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+		ExpiresAt: 		expirationTime.Unix(),
 		},
 	}
 
