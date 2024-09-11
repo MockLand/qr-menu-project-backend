@@ -28,7 +28,7 @@ func CreateCategory(c echo.Context) error {
 	}
 
 	if err := database.DB.Create(&category).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Faileddd to create category"})
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Failed to create category"})
 	}
 	return c.JSON(http.StatusOK, category)
 }
@@ -42,6 +42,9 @@ func GetCategories(c echo.Context) error {
 	var categories []model.Categories
 	database.DB.Where("user_id =?", userId).Find(&categories)
 
+	if len(categories) == 0 {
+		return c.JSON(http.StatusNotFound, map[string]interface{}{"error": "Categories not found"})
+	}
 	return c.JSON(http.StatusOK, categories)
 }
 
@@ -112,9 +115,9 @@ func DeleteCategory(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Failed to delete category"})
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message":      "Menu Deleted",
-		"menu name":    category.Name,
-		"menu id":      categoryId,
-		"menu user id": userId,
+		"message":          "Category Deleted",
+		"category name":    category.Name,
+		"category id":      categoryId,
+		"category user id": userId,
 	})
 }
