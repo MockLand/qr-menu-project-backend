@@ -24,6 +24,9 @@ func main() {
 	e.GET("/category/:id", handlers.GetCategory)
 	e.GET("/dishes", handlers.GetDishes)
 	e.GET("/dish/:id", handlers.GetDish)
+	e.GET("/ingredients", handlers.GetIngredients)
+	e.GET("/ingredients/:id", handlers.GetIngredient)
+
 
 
 
@@ -34,14 +37,17 @@ func main() {
 	e.POST("/logout", handlers.Logout)
 	e.POST("/category", handlers.CreateCategory)
 	e.POST("/dish", handlers.CreateDish)
+	e.POST("/ingredient", handlers.CreateIngredient)
 
 	e.DELETE("/menu/:id", handlers.DeleteMenu)
 	e.DELETE("/category/:id", handlers.DeleteCategory)
 	e.DELETE("/dish/:id", handlers.DeleteDish)
+	e.DELETE("/ingredient/:id", handlers.DeleteIngredient)
 
 	e.PUT("/menu/:id", handlers.UpdateMenu)
 	e.PUT("/category/:id", handlers.UpdateCategory)
 	e.PUT("/dish/:id", handlers.UpdateDish)
+	e.PUT("/ingredient/:id", handlers.UpdateIngredient)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
