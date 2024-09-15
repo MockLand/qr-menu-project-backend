@@ -38,6 +38,7 @@ func main() {
 	e.POST("/category", handlers.CreateCategory)
 	e.POST("/dish", handlers.CreateDish)
 	e.POST("/ingredient", handlers.CreateIngredient)
+	e.POST("/dishingredient", handlers.CreateDishIngredients)
 
 	e.DELETE("/menu/:id", handlers.DeleteMenu)
 	e.DELETE("/category/:id", handlers.DeleteCategory)
