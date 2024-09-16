@@ -8,8 +8,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// eger userID categoriesteki bir userid ile eslesiyor ise eslestigi categoriese eklemeyi basariyla yap
-
 func checkCategoryOwnership(userId int, categoryId int) bool {
 	var category model.Categories
 	if err := database.DB.Where("user_id = ? AND category_id = ?", userId, categoryId).First(&category).Error; err != nil {
@@ -21,7 +19,7 @@ func checkDishOwnership(c echo.Context, userId int, dishId int) error {
 	var dish model.Dishes
 	dish.ID = dishId
 
-	dishResult := database.DB.Where("user_id =? AND id = ?", userId, dish.ID).First(&dish)
+	dishResult := database.DB.Where("user_id =? AND dish_id = ?", userId, dish.ID).First(&dish)
 	if dishResult.Error != nil {
 		if dishResult.Error == gorm.ErrRecordNotFound {
 			return c.JSON(http.StatusForbidden, map[string]interface{}{"error": "User does not own the specified dish"})
@@ -36,7 +34,7 @@ func checkIngredientOwnership(c echo.Context, userId int, ingredientId int) erro
 	var ingredient model.Ingredient
 	ingredient.ID = ingredientId
 
-	ingredientResult := database.DB.Where("user_id = ? AND id = ?", userId, ingredient.ID).First(&ingredient)
+	ingredientResult := database.DB.Where("user_id = ? AND ingredient_id = ?", userId, ingredient.ID).First(&ingredient)
 	if ingredientResult.Error != nil {
 		if ingredientResult.Error == gorm.ErrRecordNotFound {
 			return c.JSON(http.StatusNotFound, map[string]interface{}{"error": "User does not own the specified ingredient"})
@@ -160,33 +158,5 @@ func DeleteDish(c echo.Context) error {
 	})
 }
 
-func CreateDishIngredients(c echo.Context) error {
-	userId, err := getSessionAndUserID(c)
-	if err != nil {
-		return err
-	}
 
-	var dishIngredients model.DishIngredients
-	dishIngredients.UserId = userId
-
-	if err := c.Bind(&dishIngredients); err != nil {
-		c.Logger().Errorf("Failed to bind input to dish ingredients model: %v", err)
-		return c.JSON(http.StatusBadRequest, map[string]interface{}{"error": "Invalid input"})
-	}
-
-	if err := checkDishOwnership(c, userId, dishIngredients.DishId); err != nil {
-		return err
-	}
-
-	if err := checkIngredientOwnership(c, userId, dishIngredients.IngredientId); err != nil {
-		return err
-	}
-
-	if err := database.DB.Create(&dishIngredients).Error; err != nil {
-		c.Logger().Errorf("Failed to create dish ingredients: %v", err)
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Failed to create dish ingredients"})
-	}
-
-	return c.JSON(http.StatusOK, dishIngredients)
-}
 

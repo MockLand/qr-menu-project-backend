@@ -26,6 +26,7 @@ func main() {
 	e.GET("/dish/:id", handlers.GetDish)
 	e.GET("/ingredients", handlers.GetIngredients)
 	e.GET("/ingredients/:id", handlers.GetIngredient)
+	e.GET("/dishingredients/:dish_id", handlers.GetDishIngredients)
 
 
 
