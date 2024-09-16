@@ -45,6 +45,7 @@ func main() {
 	e.DELETE("/category/:id", handlers.DeleteCategory)
 	e.DELETE("/dish/:id", handlers.DeleteDish)
 	e.DELETE("/ingredient/:id", handlers.DeleteIngredient)
+	e.DELETE("/dishingredient/:dish_id/:ingredient_id", handlers.DeleteDishIngredients)
 
 	e.PUT("/menu/:id", handlers.UpdateMenu)
 	e.PUT("/category/:id", handlers.UpdateCategory)

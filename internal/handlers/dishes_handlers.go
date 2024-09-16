@@ -15,34 +15,34 @@ func checkCategoryOwnership(userId int, categoryId int) bool {
 	}
 	return true
 }
-func checkDishOwnership(c echo.Context, userId int, dishId int) error {
+func checkDishOwnership(c echo.Context, userId int, dishId int) bool {
 	var dish model.Dishes
 	dish.ID = dishId
 
 	dishResult := database.DB.Where("user_id =? AND dish_id = ?", userId, dish.ID).First(&dish)
 	if dishResult.Error != nil {
 		if dishResult.Error == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusForbidden, map[string]interface{}{"error": "User does not own the specified dish"})
+			return false
 		}
 		c.Logger().Errorf("Failed to query dish: %v", dishResult.Error)
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Failed to query dish"})
+		return false
 	}
-	return nil
+	return true
 }
 
-func checkIngredientOwnership(c echo.Context, userId int, ingredientId int) error {
+func checkIngredientOwnership(c echo.Context, userId int, ingredientId int) bool {
 	var ingredient model.Ingredient
 	ingredient.ID = ingredientId
 
 	ingredientResult := database.DB.Where("user_id = ? AND ingredient_id = ?", userId, ingredient.ID).First(&ingredient)
 	if ingredientResult.Error != nil {
 		if ingredientResult.Error == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusNotFound, map[string]interface{}{"error": "User does not own the specified ingredient"})
+			return false
 		}
 		c.Logger().Errorf("Failed to query ingredient: %v", ingredientResult.Error)
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{"error": "Failed to query ingredient"})
+		return false
 	}
-	return nil
+	return true
 }
 
 func CreateDish(c echo.Context) error {
