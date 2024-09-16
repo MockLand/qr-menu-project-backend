@@ -83,4 +83,4 @@ watch:
 	    fi; \
 	fi
 
-.PHONY: postgres createdb dropdb all build run test clean migrateup migratedown
+.PHONY: postgres createdb dropdb all build run test clean migrateup migratedown watch
