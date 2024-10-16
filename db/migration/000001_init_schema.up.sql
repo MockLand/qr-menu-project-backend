@@ -7,6 +7,12 @@ CREATE TABLE Users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE qr_codes (
+    id SERIAL PRIMARY KEY,
+    data VARCHAR(255),
+    image BYTEA
+);
+
 CREATE TABLE Categories (
     category_id SERIAL PRIMARY KEY NOT NULL,
     user_id INT REFERENCES Users(user_id) NOT NULL,
